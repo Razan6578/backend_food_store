@@ -1,17 +1,22 @@
-from django.shortcuts import render
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from .models import Food
 from .serializers import FoodSerializer
 
-# Create your views here.
 
-class FoodListView(ListAPIView):
-    queryset = Food.objects.all()
-    serializer_class = FoodSerializer
+@api_view(['GET'])
+def get_foods(request):
+    foods = Food.objects.all()
+    serializer = FoodSerializer(foods, many=True)
+    return Response(serializer.data)
 
 
-class FoodDetailView(RetrieveAPIView):
-    queryset = Food.objects.all()
-    serializer_class = FoodSerializer
-    
+@api_view(['GET'])
+def get_food(request, pk):
+    try:
+        food = Food.objects.get(id=pk)
+    except Food.DoesNotExist:
+        return Response({"error": "Food not found"}, status=404)
 
+    serializer = FoodSerializer(food)
+    return Response(serializer.data)
